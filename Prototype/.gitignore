@@ -1,0 +1,10 @@
+build/
+dependent-package/
+.vscode/
+bin/
+lib/
+test*
+ThirdPartyLib/
+report
+report/
+log

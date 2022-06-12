@@ -1,0 +1,127 @@
+enclave {
+    include "sgx_tseal.h"
+    include "sgx_trts.h"
+    include "constVar.h"
+    include "chunkStructure.h"
+    include "stdbool.h"
+    include "sgx_key_exchange.h"
+
+    from "sgx_tstdc.edl" import *;
+    from "sgx_tsgxssl.edl" import *;
+    from "sgx_tkey_exchange.edl" import *;
+    from "sgx_pthread.edl" import *;
+
+    /* 
+     * uprint - invokes OCALL to display string buffer inside the enclave.
+     *  [in]: copy the string buffer to App outside.
+     *  [string]: specifies 'str' is a NULL terminated buffer.
+     */
+    untrusted {
+        /* OCall print the message */
+        void Ocall_SGX_Exit_Error([in, string] const char *error_msg); 
+        void Ocall_Printf([in, string] const char* str); 
+        void Ocall_PrintfBinary([in, size=len] const uint8_t* buffer, size_t len);
+
+        /* dump the container to the outside buffer */
+        void Ocall_WriteContainer([user_check] void* outClient);
+
+        /* for the operation of persistent index store */
+        void Ocall_UpdateIndexStoreBuffer([in, out] bool* ret, [in, size=keySize] const char* key, 
+            size_t keySize, [in, size=bufferSize] const uint8_t* buffer, size_t bufferSize);
+        
+        /* read the persistent index store */
+        void Ocall_ReadIndexStore([in, out] bool* ret, [in, size=keySize] const char* key, 
+                                size_t keySize, 
+                                [out] uint8_t** retVal,
+                                [out] size_t* expectedRetValSize,
+                                [user_check] void* outClient);
+        
+
+        /* write sealed data to the disk */
+        void Ocall_InitWriteSealedFile([in, out] bool* ret, [in, string] const char* sealedFileName);
+        void Ocall_CloseWriteSealedFile([in, string] const char* sealedFileName);
+        void Ocall_WriteSealedData([in, string] const char* sealedFileName,
+                            [in, size=sealedDataSize] uint8_t* sealedDataBuffer,
+                            size_t sealedDataSize);
+
+        /* read sealed data from the disk */
+        void Ocall_InitReadSealedFile([in, out] uint64_t* fileSize, [in, string] const char* sealedFileName);
+        void Ocall_CloseReadSealedFile([in, string] const char* sealedFileName);
+        void Ocall_ReadSealedData([in, string] const char* sealedFileName, 
+                            [out, size=sealedDataSize] uint8_t* dataBuffer, 
+                            uint32_t sealedDataSize); 
+
+        /* for performance measurement */
+        void Ocall_GetCurrentTime([in, out] uint64_t* retTime);
+
+        /* get required container from the outside application */
+        void Ocall_GetReqContainers([user_check] void* outClient);
+
+        /* send the restore chunks */
+        void Ocall_SendRestoreData([user_check] void* outClient);
+
+        /* query the outside deduplication index */
+        void Ocall_QueryOutIndex([user_check] void* outClient);
+
+        /* update the outside deduplication index */
+        void Ocall_UpdateOutIndex([user_check] void* outClient);
+
+        /* persist the buffer to file */
+        void Ocall_UpdateFileRecipe([user_check] void* outClient);
+
+        /* get uuid */
+        void Ocall_CreateUUID([out, size=len] uint8_t* id, size_t len);
+    };
+
+
+    trusted {
+        /* init the enclave */
+        public void Ecall_Init_Upload(int indexType);
+
+        /* destroy the enclave*/
+        public void Ecall_Destroy_Upload();
+
+        /* init the enclave recvDecoder */
+        public void Ecall_Init_Restore();
+
+        /* destore the restore enclave memory */
+        public void Ecall_Destroy_Restore();
+
+        /* process current batch of file recipes*/
+        public void Ecall_ProcRecipeBatch([user_check] uint8_t* recipeBuffer, size_t recipeNum, 
+            [user_check] ResOutSGX_t* resOutSGX);
+
+        /* process the tail batch of file recipes*/
+        public void Ecall_ProcRecipeTailBatch([user_check] ResOutSGX_t* resOutSGX);
+
+        /* process current batch of chunks*/
+        public void Ecall_ProcChunkBatch([user_check] SendMsgBuffer_t* recvChunkBuffer,
+            [user_check] UpOutSGX_t* upOutSGX);
+
+        /* process the tail batch of chunks*/
+        public void Ecall_ProcTailChunkBatch([user_check] UpOutSGX_t* upOutSGX);
+
+        /* process the last container */
+        public void Ecall_Init_Client(uint32_t clientID, int type,
+            int optType, [user_check] uint8_t* encMasterKey,
+            [user_check] void** sgxClient);
+
+        /* process the last container for two-path */
+        public void Ecall_Destroy_Client([user_check] void* sgxClient);
+
+        /* for remote attestation */
+        public sgx_status_t Ecall_Enclave_RA_Init(sgx_ec256_public_t key, int b_pse, 
+            [out] sgx_ra_context_t *ctx, [out] sgx_status_t *pse_status);
+        public sgx_status_t Ecall_Enclave_RA_Close(sgx_ra_context_t ctx);
+        public void Ecall_Get_RA_Key_Hash(sgx_ra_context_t ctx, sgx_ra_key_type_t type);
+
+        /* for key exchange */
+        public void Ecall_Session_Key_Exchange([user_check] uint8_t* publicKeyBuffer,
+            uint32_t clientID);
+
+        public void Ecall_Enclave_Init([user_check] EnclaveConfig_t* enclaveConfig);
+        public void Ecall_Enclave_Destroy();
+
+        public void Ecall_GetEnclaveInfo([user_check] EnclaveInfo_t* info);
+    };
+};

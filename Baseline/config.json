@@ -1,0 +1,30 @@
+{
+    "ChunkerConfig": {
+        "chunkingType_": 1,
+        "maxChunkSize_": 16384,
+        "avgChunkSize_": 8192,
+        "minChunkSize_": 4096,
+        "slidingWinSize_": 128,
+        "readSize_": 128
+    },
+    "StorageCore": {
+        "recipeRootPath_": "Recipes/",
+        "containerRootPath_": "Containers/",
+        "fp2ChunkDBName_": "db1"
+    },
+    "RestoreWriter": {
+        "readCacheSize_": 64
+    },
+    "KeyServer": {
+        "keyServerIp_": "127.0.0.1",
+        "keyServerPort_": 16667 
+    },
+    "DataSender": {
+        "storageServerIp_": "127.0.0.1",
+        "storageServerPort_": 16666,
+        "clientID_": 1,
+        "localSecret_": "12345",
+        "sendChunkBatchSize_": 512,
+        "sendRecipeBatchSize_": 1024
+    }
+}
