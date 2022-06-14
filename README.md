@@ -9,6 +9,9 @@ DEBE is a shielded DbE-based deduplicated storage system that protects deduplica
 
 Note that each folder has a separate README file to introduce the build instructions and usage.
 
+## Publication
+- Zuoru Yang, Jingwei Li, and Patrick P. C. Lee. [Secure and Lightweight Deduplicated Storage via Shielded Deduplication-Before-Encryption.](http://www.cse.cuhk.edu.hk/~pclee/www/pubs/atc22.pdf). USENIX ATC 2022.
+
 ## Dependencies
 
 - Basic packages: clang, llvm, cmake, libboost-all-dev, libleveldb-dev, jemalloc, liblz4-dev, jq, golang-go, and openssl 
