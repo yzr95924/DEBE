@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.1)
 project(DEBESim)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_MODULE_PATH /usr/share/cmake-3.10/Modules/)
 list(APPEND CMAKE_MODULE_PATH ${DEBESim_SOURCE_DIR}/cmake)
